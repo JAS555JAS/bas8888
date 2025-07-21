@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BAS888 - สล็อต 3x3</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffffff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      font-size: 3rem;
+      margin-top: 20px;
+      color: #333;
+    }
+    .slot {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .slot div {
+      font-size: 40px;
+      background: #f8f8f8;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease-in-out;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: none;
+      background-color: #ff69b4;
+      color: white;
+      cursor: pointer;
+    }
+    #adminPanel, #gamePanel {
+      display: none;
+      margin-top: 20px;
+    }
+    .log {
+      max-height: 150px;
+      overflow-y: auto;
+      margin: 10px auto;
+      padding: 10px;
+      background: #eee;
+      width: 300px;
+      border-radius: 10px;
+    }
+    #loginBox {
+      margin-top: 50px;
+      background: #f2f2f2;
+      padding: 20px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <h1>BAS888 🎰</h1>
+  <div id="loginBox">
+    <h2>เข้าสู่ระบบ</h2>
+    <input type="text" id="username" placeholder="ชื่อผู้ใช้" />
+    <input type="password" id="password" placeholder="รหัสผ่าน" />
+    <button onclick="login()">เข้าสู่ระบบ</button>
+  </div>
+
+  <div id="gamePanel">
+    <div class="slot" id="reels">
+      <div>🍒</div><div>🍒</div><div>🍒</div>
+      <div>🍒</div><div>🍒</div><div>🍒</div>
+      <div>🍒</div><div>🍒</div><div>🍒</div>
+    </div>
+    <p>ยอดเงิน: <span id="balance">10000</span> บาท</p>
+    <p>ฟรีสปิน: <span id="freespin">0</span></p>
+    <select id="bet">
+      <option value="1">1</option>
+      <option value="10">10</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="1000">1000</option>
+    </select>
+    <button onclick="spin()">หมุน</button>
+    <button onclick="addMoney()">เสกเงิน</button>
+    <button onclick="toggleAdmin()">Admin</button>
+    <div id="adminPanel">
+      <p>เปอร์เซ็นต์ชนะปัจจุบัน: <span id="winrate">30</span>%</p>
+      <input type="number" id="newRate" min="0" max="100" value="30" />
+      <button onclick="updateWinRate()">อัปเดต</button>
+    </div>
+    <div class="log" id="history"></div>
+  </div>
+
+  <audio id="spinSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_13e469c0f2.mp3?filename=slot-machine-spin-9191.mp3"></audio>
+  <audio id="winSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_f8c68fdf5a.mp3?filename=correct-2-46134.mp3"></audio>
+  <audio id="jackpotSound" src="https://cdn.pixabay.com/download/audio/2023/02/21/audio_b7ad84582e.mp3?filename=casino-jackpot-111888.mp3"></audio>
+
+  <script>
+    const symbols = ["🍒", "🍋", "🍊", "🍇", "⭐", "🔔"];
+    let balance = 10000;
+    let freeSpin = 0;
+    let winRate = 30;
+
+    const users = {
+      player: "1234",
+      admin: "admin"
+    };
+
+    function login() {
+      const user = document.getElementById("username").value;
+      const pass = document.getElementById("password").value;
+      if (users[user] && users[user] === pass) {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("gamePanel").style.display = "block";
+        if (user === "admin") toggleAdmin();
+      } else {
+        alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      }
+    }
+
+    function spin() {
+      const spinSound = document.getElementById("spinSound");
+      const winSound = document.getElementById("winSound");
+      const jackpotSound = document.getElementById("jackpotSound");
+      const bet = parseInt(document.getElementById("bet").value);
+
+      if (balance < bet && freeSpin === 0) return alert("เงินไม่พอ");
+      if (freeSpin === 0) balance -= bet;
+
+      spinSound.play();
+
+      const reels = [];
+      for (let i = 0; i < 3; i++) {
+        reels[i] = [];
+        for (let j = 0; j < 3; j++) {
+          reels[i][j] = symbols[Math.floor(Math.random() * symbols.length)];
+        }
+      }
+
+      const reelDivs = document.getElementById("reels").children;
+      let index = 0;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          const el = reelDivs[index++];
+          el.innerText = reels[i][j];
+          el.style.transform = 'scale(1.2)';
+          setTimeout(() => el.style.transform = 'scale(1)', 200);
+        }
+      }
+
+      const flat = reels.flat();
+      const grapes = flat.filter(f => f === "🍇").length;
+      const winLine = reels.some(row => row[0] === row[1] && row[1] === row[2]);
+
+      let msg = "❌ ไม่ชนะ";
+      if (grapes >= 3) {
+        balance += bet * 10;
+        freeSpin += 3;
+        jackpotSound.play();
+        msg = `🎉 แจ็คพอตองุ่น! +${bet * 10} บาท ฟรีสปิน +3`;
+      } else if (winLine && Math.random() * 100 < winRate) {
+        balance += bet * 5;
+        winSound.play();
+        msg = `✨ ชนะ +${bet * 5} บาท`;
+      } else if (freeSpin > 0) {
+        freeSpin--;
+        msg = `ใช้ฟรีสปิน เหลือ: ${freeSpin}`;
+      }
+
+      document.getElementById("balance").innerText = balance;
+      document.getElementById("freespin").innerText = freeSpin;
+      const log = document.createElement("div");
+      log.innerText = msg;
+      document.getElementById("history").prepend(log);
+    }
+
+    function addMoney() {
+      balance += 1000;
+      document.getElementById("balance").innerText = balance;
+    }
+
+    function toggleAdmin() {
+      const panel = document.getElementById("adminPanel");
+      panel.style.display = panel.style.display === "none" ? "block" : "none";
+    }
+
+    function updateWinRate() {
+      const newRate = parseInt(document.getElementById("newRate").value);
+      if (newRate >= 0 && newRate <= 100) {
+        winRate = newRate;
+        document.getElementById("winrate").innerText = winRate;
+        alert("อัปเดตแล้ว");
+      }
+    }
+  </script>
+</body>
+</html>
